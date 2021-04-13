@@ -29,12 +29,14 @@ const SerieSchema = new Schema({
     nota_media: Number,
     generos: [String],
     imagen: String,
+    trailer: String,
     temporadas: Number,
     capitulos: Number,
     inicio: Date,
     final: Date,
     actores: [Object],
     creadores: [String],
+    plataformas: [Object],
     criticas: [CriticaSchema],
     comentarios: [ComentarioSchema]
 });
