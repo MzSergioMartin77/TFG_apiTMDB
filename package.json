@@ -1,0 +1,15 @@
+{
+  "name": "poblar-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sergio",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^5.11.8",
+    "moviedb": "^0.2.10"
+  }
+}
