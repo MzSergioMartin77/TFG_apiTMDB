@@ -29,13 +29,22 @@ function streamingPeli(id, peli) {
         });
 
         resp.on('end', () => {
-            console.log(JSON.parse(data).result);
-            JSON.parse(data).results.ES.flatrate.forEach(element => {
-                peli.plataformas.push({
-                    nombre: element.provider_name,
-                    icono: "https://www.themoviedb.org/t/p/original" + element.logo_path
-                })
-            })
+            if (!JSON.parse(data).results.ES) {
+                console.log('No esta');
+            }
+            else {
+                if (!JSON.parse(data).results.ES.flatrate) {
+                    console.log('No esta en ninguna plataforma de streaming')
+                }
+                else {
+                    JSON.parse(data).results.ES.flatrate.forEach(element => {
+                        peli.plataformas.push({
+                            nombre: element.provider_name,
+                            icono: "https://www.themoviedb.org/t/p/original" + element.logo_path
+                        })
+                    })
+                }
+            }
             peli.save();
             console.log("Peli Guardado");
             stdin.removeAllListeners();
@@ -50,14 +59,20 @@ function streamingPeli(id, peli) {
 function videoPeli(id, peli) {
     mdb.movieVideos({ id: id, language: 'es' }, (err, res) => {
         let trailer;
-        if (res) {
-            res.results.forEach(element => {
-                trailer = "https://www.youtube.com/embed/" + element.key;
-            })
-            peli.trailer = trailer;
+        if (res.results.length != 0) {
+            trailer = "https://www.youtube.com/embed/" + res.results[0].key;
+            peli.trailer_es = trailer;
         }
-        streamingPeli(id, peli);
+        
     });
+    mdb.movieVideos({ id: id }, (err, res) => {
+        let trailer2;
+        if (res.results.length != 0) {
+            trailer2 = "https://www.youtube.com/embed/" + res.results[0].key;
+            peli.trailer_en = trailer2;
+        }
+    });   
+    streamingPeli(id, peli);
 }
 
 function castPeli(id, peli) {
@@ -80,12 +95,13 @@ function castPeli(id, peli) {
 function infoPeli(id, peli) {
     Pelicula.countDocuments({}, (err, count1) => {
         Serie.countDocuments({}, (err, count2) => {
-            peli.id_serie = count1 + count2 + 1;
+            peli.id_model = count1 + count2 + 1;
         });
-    }); 
+    });
     mdb.movieInfo({ id: id, language: 'es' }, (err, res) => {
         console.log('entra');
         if (res) {
+            peli.id_TMDB = res.id;
             peli.titulo = res.title;
             peli.titulo_original = res.original_title;
             peli.sinopsis = res.overview;
@@ -94,12 +110,12 @@ function infoPeli(id, peli) {
             peli.fecha_estreno = res.release_date;
             peli.imagen = "https://image.tmdb.org/t/p/w600_and_h900_bestv2/" + res.poster_path;
             res.genres.forEach(element => {
-                if(element.name == 'Action & Adventure'){
+                if (element.name == 'Action & Adventure') {
                     peli.generos.push('Acción & Aventura')
                 }
-                else if(element.name == 'Sci-Fi & Fantasy'){
+                else if (element.name == 'Sci-Fi & Fantasy') {
                     peli.generos.push('Ciencia Ficción & Fantástico')
-                }else{
+                } else {
                     peli.generos.push(element.name);
                 }
             });
@@ -149,14 +165,19 @@ function streamingSerie(id, serie) {
 function videoSerie(id, serie) {
     mdb.tvVideos({ id: id, language: 'es' }, (err, res) => {
         let trailer;
-        if (res) {
-            res.results.forEach(element => {
-                trailer = "https://www.youtube.com/embed/" + element.key;
-            })
-            serie.trailer = trailer;
+        if (res.results.length != 0) {
+            trailer = "https://www.youtube.com/embed/" + res.results[0].key;
+            serie.trailer_es = trailer;
         }
-        streamingSerie(id, serie);
     });
+    mdb.tvVideos({ id: id}, (err, res) => {
+        let trailer2;
+        if (res.results.length != 0) {
+            trailer2 = "https://www.youtube.com/embed/" + res.results[0].key;
+            serie.trailer_en = trailer2;
+        }
+    });
+    streamingSerie(id, serie);
 }
 
 function castS(id, serie) {
@@ -174,11 +195,12 @@ function castS(id, serie) {
 function infoSerie(id, serie) {
     Pelicula.countDocuments({}, (err, count1) => {
         Serie.countDocuments({}, (err, count2) => {
-            serie.id_serie = count1 + count2 + 1;
+            serie.id_model = count1 + count2 + 1;
         });
-    }); 
+    });
     mdb.tvInfo({ id: id, language: 'es' }, (err, res) => {
         if (res) {
+            serie.id_TMDB = res.id;
             serie.titulo = res.name;
             serie.titulo_original = res.original_name;
             serie.sinopsis = res.overview;
@@ -192,12 +214,12 @@ function infoSerie(id, serie) {
                 serie.creadores.push(element.name);
             });
             res.genres.forEach(element => {
-                if(element.name == 'Action & Adventure'){
+                if (element.name == 'Action & Adventure') {
                     serie.generos.push('Acción & Aventura')
                 }
-                else if(element.name == 'Sci-Fi & Fantasy'){
+                else if (element.name == 'Sci-Fi & Fantasy') {
                     serie.generos.push('Ciencia Ficción & Fantástico')
-                }else{
+                } else {
                     serie.generos.push(element.name);
                 }
             });
@@ -262,6 +284,7 @@ function infoPr(id, profesional) {
     });
     mdb.personInfo({ id: id, language: 'es' }, (err, res) => {
         if (res) {
+            profesional.id_TMDB = res.id;
             profesional.nombre = res.name;
             profesional.biografia = res.biography;
             profesional.fecha_nacimiento = res.birthday;

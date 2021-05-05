@@ -19,6 +19,7 @@ const serieSchema = new Schema({
 
 //esquema de los datos de los usuarios
 const UsuarioSchema = Schema({
+    id_model: Number,
     nombre: String,
     email: String,
     pass: String,

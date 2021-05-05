@@ -22,14 +22,16 @@ const ComentarioSchema = new Schema({
 
 //esquema de los datos de las películas
 const PeliSchema = new Schema({
-    id_peli: Number,
+    id_model: Number,
+    id_TMDB: Number,
     titulo: String,
     titulo_original: String,
     sinopsis: String,
     nota_media: Number,
     generos: [String],
     imagen: String,
-    trailer: String,
+    trailer_es: String,
+    trailer_en: String,
     duracion: Number,
     fecha_estreno: Date,
     actores: [Object],

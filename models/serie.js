@@ -22,14 +22,16 @@ const ComentarioSchema = new Schema({
 
 //esquema de los datos de las películas
 const SerieSchema = new Schema({
-    id_serie: Number,
+    id_model: Number,
+    id_TMDB: Number,
     titulo: String,
     titulo_original: String,
     sinopsis: String,
     nota_media: Number,
     generos: [String],
     imagen: String,
-    trailer: String,
+    trailer_es: String,
+    trailer_en: String,
     temporadas: Number,
     capitulos: Number,
     inicio: Date,
