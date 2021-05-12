@@ -63,16 +63,16 @@ function videoPeli(id, peli) {
             trailer = "https://www.youtube.com/embed/" + res.results[0].key;
             peli.trailer_es = trailer;
         }
-        
+        mdb.movieVideos({ id: id }, (err, res) => {
+            let trailer2;
+            if (res.results.length != 0) {
+                trailer2 = "https://www.youtube.com/embed/" + res.results[0].key;
+                peli.trailer_en = trailer2;
+            }
+            streamingPeli(id, peli);
+        }); 
     });
-    mdb.movieVideos({ id: id }, (err, res) => {
-        let trailer2;
-        if (res.results.length != 0) {
-            trailer2 = "https://www.youtube.com/embed/" + res.results[0].key;
-            peli.trailer_en = trailer2;
-        }
-    });   
-    streamingPeli(id, peli);
+    
 }
 
 function castPeli(id, peli) {
@@ -169,15 +169,15 @@ function videoSerie(id, serie) {
             trailer = "https://www.youtube.com/embed/" + res.results[0].key;
             serie.trailer_es = trailer;
         }
+        mdb.tvVideos({ id: id}, (err, res) => {
+            let trailer2;
+            if (res.results.length != 0) {
+                trailer2 = "https://www.youtube.com/embed/" + res.results[0].key;
+                serie.trailer_en = trailer2;
+            }
+            streamingSerie(id, serie);
+        });
     });
-    mdb.tvVideos({ id: id}, (err, res) => {
-        let trailer2;
-        if (res.results.length != 0) {
-            trailer2 = "https://www.youtube.com/embed/" + res.results[0].key;
-            serie.trailer_en = trailer2;
-        }
-    });
-    streamingSerie(id, serie);
 }
 
 function castS(id, serie) {
