@@ -180,6 +180,32 @@ function videoSerie(id, serie) {
     });
 }
 
+function castSerie(id, serie) {
+    let url = 'https://api.themoviedb.org/3/tv/' + id + '/aggregate_credits?api_key=1acd0c7bc48f18ba631625da81edf46a';
+    console.log(url);
+    https.get(url, (resp) => {
+        let data = '';
+
+        resp.on('data', (chunk) => {
+            data += chunk;
+        });
+
+        resp.on('end', () => {
+            JSON.parse(data).cast.forEach(element => {
+                serie.actores.push({
+                    nombre: element.name,
+                    personaje: element.roles[0].character
+                })
+            })
+            console.log("Actores guardados");
+            videoSerie(id, serie);
+        });
+
+    }).on("error", (err) => {
+        console.log("Error: " + err.message);
+    });
+}
+
 function castS(id, serie) {
     mdb.tvCredits({ id: id, language: 'es' }, (err, res) => {
         if (res) {
@@ -224,7 +250,7 @@ function infoSerie(id, serie) {
                 }
             });
         }
-        castS(id, serie);
+        castSerie(id, serie);
     });
 }
 
