@@ -6,9 +6,11 @@ const Schema = mongoose.Schema;
 //esquema de los datos de las críticas 
 const CriticaSchema = new Schema({
     nota: Number,
+    nick: String,
     titulo: String,
     texto: String,
     fecha: Date,
+    usuario_model: Number,
     usuario: {type: mongoose.Schema.Types.ObjectId, ref: 'usuario'}
 });
 

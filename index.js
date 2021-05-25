@@ -8,7 +8,7 @@ const Pelicula = require('./models/pelicula');
 const Serie = require('./models/serie');
 const Profesional = require('./models/profesional');
 const https = require('https');
-
+const fs = require('fs');
 
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost:27017/TFGdb')
@@ -321,6 +321,53 @@ function infoPr(id, profesional) {
     });
 }
 
+function datosModelo() {
+    let datos = [];
+
+    Pelicula.find({}, (err, peliculas) => {
+        console.log('entra');
+        if (err) {
+            console.log("Algo ha fallado")
+        }
+        if (!peliculas) {
+            console.log("No hay películas")
+        }
+
+        for(let i=0; i<peliculas.length; i++){
+            for(let j=0; j<peliculas[i].criticas.length; j++){
+                datos.push({movieId: peliculas[i].id_model, 
+                    userId:  peliculas[i].criticas[j].usuario_model, 
+                    nota:  peliculas[i].criticas[j].nota})
+            }
+        }
+        
+        Serie.find({}, (err, series) => {
+            if (err) {
+                console.log("Algo ha fallado")
+            }
+            if (!series) {
+                console.log("No hay series")
+            }
+            
+            for(let i=0; i<series.length; i++){
+                for(let j=0; j<series[i].criticas.length; j++){
+                    datos.push({movieId: series[i].id_model,
+                    userId: series[i].criticas[j].usuario_model,
+                    nota: series[i].criticas[j].nota})
+                }
+            }
+
+            //console.log(datos);
+            const datosJSON = JSON.stringify(datos);
+            //console.log(datosJSON);
+            fs.writeFile("./datos.json", datosJSON, () => {
+                console.log('Datos guardados');
+            })
+        });
+        
+    });
+}
+
 function main() {
 
     let op;
@@ -329,6 +376,7 @@ function main() {
         console.log('1. Añadir películas');
         console.log('2. Añadir series');
         console.log('3. Añadir profesional');
+        console.log('4. Extraer los datos para actualizar el recomendador');
         console.log('0. Salir');
         let opcion = process.openStdin();
 
@@ -363,6 +411,9 @@ function main() {
                     let idPr = p.toString().trim();
                     infoPr(idPr, profesional);
                 })
+                break
+            case '4':
+                datosModelo();
                 break
             case '0':
                 console.log('FIN');
