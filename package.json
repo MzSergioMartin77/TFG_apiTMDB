@@ -9,7 +9,8 @@
   "author": "Sergio",
   "license": "ISC",
   "dependencies": {
-    "mongoose": "^5.11.8",
-    "moviedb": "^0.2.10"
+    "mongoose": "^6.4.1",
+    "moviedb": "^0.2.12",
+    "python-shell": "^3.0.1"
   }
 }

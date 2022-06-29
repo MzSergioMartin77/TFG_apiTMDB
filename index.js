@@ -1,26 +1,27 @@
 'use strict'
 
 const mongoose = require('mongoose');
-mongoose.set('useUnifiedTopology', true);
-mongoose.set('useNewUrlParser', true);
+//mongoose.set('useUnifiedTopology', true);
+//mongoose.set('useNewUrlParser', true);
 const mdb = require('moviedb')('1acd0c7bc48f18ba631625da81edf46a');
 const Pelicula = require('./models/pelicula');
 const Serie = require('./models/serie');
 const Profesional = require('./models/profesional');
 const https = require('https');
 const fs = require('fs');
+const PythonS = require('python-shell');
+const {exec} = require("child_process");
 
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost:27017/TFGdb')
     .then(() => {
-        console.log("Conexión realizada con éxito");
-        
-    }).catch(err => console.log('error no se pudo realizar la conexión'));
+        console.log("");
+
+    }).catch(err => console.log('Error no se pudo realizar la conexión'));
 main();
 let stdin = process.openStdin();
 
 function streamingPeli(id, peli, state) {
-    console.log(peli.id_model)
     let url = 'https://api.themoviedb.org/3/movie/' + id + '/watch/providers?api_key=1acd0c7bc48f18ba631625da81edf46a';
     https.get(url, (resp) => {
         let data = '';
@@ -30,21 +31,22 @@ function streamingPeli(id, peli, state) {
         });
 
         resp.on('end', () => {
-            if (!JSON.parse(data).results.ES) {
+            /*if (!JSON.parse(data).results.ES) {
                 console.log('No esta');
             }
             else {
                 if (!JSON.parse(data).results.ES.flatrate) {
                     console.log('No esta en ninguna plataforma de streaming')
-                }
-                else {                    
+                }*/
+            if (JSON.parse(data).results.ES) {
+                if (JSON.parse(data).results.ES.flatrate) {
                     JSON.parse(data).results.ES.flatrate.forEach(element => {
-                        if(element.provider_name != 'HBO'){
+                        if (element.provider_name != 'HBO') {
                             peli.plataformas.push({
                                 nombre: element.provider_name,
                                 icono: "https://www.themoviedb.org/t/p/original" + element.logo_path
                             })
-                        }  
+                        }
                     })
                 }
             }
@@ -63,12 +65,12 @@ function streamingPeli(id, peli, state) {
                 }
             })*/
             peli.save();
-            console.log("Película Guardada");
-            if(state == 'add'){
+            if (state == 'add') {
+                console.log("Película Guardada");
                 stdin.removeAllListeners();
+                console.log('');
                 main();
-            } 
-            
+            }
         });
 
     }).on("error", (err) => {
@@ -90,13 +92,12 @@ function videoPeli(id, peli) {
                 peli.trailer_en = trailer2;
             }
             streamingPeli(id, peli, 'add');
-        }); 
+        });
     });
-    
+
 }
 
 function castPeli(id, peli) {
-    console.log('entro -----')
     mdb.movieCredits({ id: id, language: 'es' }, (err, res) => {
         if (res) {
             res.cast.forEach(element => {
@@ -120,7 +121,6 @@ function infoPeli(id, peli) {
         });
     });
     mdb.movieInfo({ id: id, language: 'es' }, (err, res) => {
-        console.log('entra');
         if (res) {
             peli.id_TMDB = res.id;
             peli.titulo = res.title;
@@ -146,7 +146,7 @@ function infoPeli(id, peli) {
             console.log('No hay ninguna película con este identificador')
             main();
         }
-        
+
     });
 }
 
@@ -160,30 +160,33 @@ function streamingSerie(id, serie, state) {
         });
 
         resp.on('end', () => {
-            if (!JSON.parse(data).results.ES) {
+            /*if (!JSON.parse(data).results.ES) {
                 console.log('No esta');
             }
             else {
                 if (!JSON.parse(data).results.ES.flatrate) {
                     console.log('No esta en ninguna plataforma de streaming')
-                }
-                else {
+                }*/
+            if (JSON.parse(data).results.ES) {
+                if (JSON.parse(data).results.ES.flatrate) {
                     JSON.parse(data).results.ES.flatrate.forEach(element => {
-                        if(element.provider_name != 'HBO'){
+                        if (element.provider_name != 'HBO') {
                             serie.plataformas.push({
                                 nombre: element.provider_name,
                                 icono: "https://www.themoviedb.org/t/p/original" + element.logo_path
                             })
-                        }  
+                        }
                     })
                 }
             }
             serie.save();
-            console.log("Serie Guardada");
-            if(state == 'add'){
+
+            if (state == 'add') {
+                console.log("Serie Guardada");
                 stdin.removeAllListeners();
+                console.log('');
                 main();
-            } 
+            }
         });
 
     }).on("error", (err) => {
@@ -198,7 +201,7 @@ function videoSerie(id, serie) {
             trailer = "https://www.youtube.com/embed/" + res.results[0].key;
             serie.trailer_es = trailer;
         }
-        mdb.tvVideos({ id: id}, (err, res) => {
+        mdb.tvVideos({ id: id }, (err, res) => {
             let trailer2;
             if (res.results.length != 0) {
                 trailer2 = "https://www.youtube.com/embed/" + res.results[0].key;
@@ -211,7 +214,7 @@ function videoSerie(id, serie) {
 
 function castSerie(id, serie) {
     let url = 'https://api.themoviedb.org/3/tv/' + id + '/aggregate_credits?api_key=1acd0c7bc48f18ba631625da81edf46a';
-    
+
     https.get(url, (resp) => {
         let data = '';
 
@@ -225,8 +228,7 @@ function castSerie(id, serie) {
                     nombre: element.name,
                     personaje: element.roles[0].character
                 })
-            })
-            console.log("Actores guardados");
+            });
             videoSerie(id, serie);
         });
 
@@ -284,7 +286,7 @@ function infoSerie(id, serie) {
             console.log('No hay ninguna serie con este identificador')
             main();
         }
-        
+
     });
 }
 
@@ -334,6 +336,7 @@ function castPr(id, profesional) {
         profesional.save();
         console.log("Profesional Guardado");
         stdin.removeAllListeners();
+        console.log('');
         main();
     });
 }
@@ -353,11 +356,43 @@ function infoPr(id, profesional) {
 
             castPr(id, profesional);
 
-        }else{
+        } else {
             console.log('No hay ninguna película con este identificador')
             main();
         }
-        
+
+    });
+}
+
+function actualizarModelotf() {
+
+    const options = {
+        mode: 'text',
+        pythonPath: 'C:/Users/Sergi/Anaconda3/envs/tensorflowks/python.exe',
+        pythonOptions: ['-u'],
+        scriptPath: './',
+        args: ['']
+    };
+    
+
+    PythonS.PythonShell.run('recomendadorjson.py', options, function (err, results) {
+        if (err) throw err;
+        // results is an array consisting of messages collected during execution
+        console.log('Resultado Python: %j', results);
+        //let dir = 'C:/Users/Sergi/Anaconda3/envs/tensorflowks';
+        if(results){
+            exec("tensorflowjs_converter --input=keras_saved_model ./modeltf ./modeltfjs", (error, stdout, stderr) => {
+                if (error) {
+                    console.log(`error: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    console.log(`stderr: ${stderr}`);
+                    return;
+                }
+                console.log(`stdout: ${stdout}`);
+            });
+        }
     });
 }
 
@@ -365,7 +400,6 @@ function datosModelo() {
     let datos = [];
 
     Pelicula.find({}, (err, peliculas) => {
-        console.log('entra');
         if (err) {
             console.log("Algo ha fallado")
         }
@@ -373,14 +407,16 @@ function datosModelo() {
             console.log("No hay películas")
         }
 
-        for(let i=0; i<peliculas.length; i++){
-            for(let j=0; j<peliculas[i].criticas.length; j++){
-                datos.push({movieId: peliculas[i].id_model, 
-                    userId:  peliculas[i].criticas[j].usuario_model, 
-                    nota:  peliculas[i].criticas[j].nota})
+        for (let i = 0; i < peliculas.length; i++) {
+            for (let j = 0; j < peliculas[i].criticas.length; j++) {
+                datos.push({
+                    movieId: peliculas[i].id_model,
+                    userId: peliculas[i].criticas[j].usuario_model,
+                    nota: peliculas[i].criticas[j].nota
+                })
             }
         }
-        
+
         Serie.find({}, (err, series) => {
             if (err) {
                 console.log("Algo ha fallado")
@@ -388,12 +424,14 @@ function datosModelo() {
             if (!series) {
                 console.log("No hay series")
             }
-            
-            for(let i=0; i<series.length; i++){
-                for(let j=0; j<series[i].criticas.length; j++){
-                    datos.push({movieId: series[i].id_model,
-                    userId: series[i].criticas[j].usuario_model,
-                    nota: series[i].criticas[j].nota})
+
+            for (let i = 0; i < series.length; i++) {
+                for (let j = 0; j < series[i].criticas.length; j++) {
+                    datos.push({
+                        movieId: series[i].id_model,
+                        userId: series[i].criticas[j].usuario_model,
+                        nota: series[i].criticas[j].nota
+                    })
                 }
             }
 
@@ -401,16 +439,17 @@ function datosModelo() {
             const datosJSON = JSON.stringify(datos);
             //console.log(datosJSON);
             fs.writeFile("./datos.json", datosJSON, () => {
-                console.log('Datos guardados');
-                main();
+                console.log('Fiechero de datos creado correctamente');
+                console.log('');
+                actualizarModelotf();
             })
         });
-        
+
     });
 }
 
-function upPlataformaPeli(){
-    
+function upPlataformaPeli() {
+
     Pelicula.find((err, peliculas) => {
         if (err) {
             console.log("Algo ha fallado")
@@ -420,15 +459,16 @@ function upPlataformaPeli(){
         }
         peliculas.forEach(element => {
             element.plataformas.splice(0)
-            console.log(element.plataformas)
-            streamingPeli(element.id_TMDB, element, 'update')   
+            streamingPeli(element.id_TMDB, element, 'update')
         })
     });
+    console.log('Platafomas de películas actualizadas correctamente');
+    console.log('');
     main();
 }
 
-function upPlataformaSerie(){
-    
+function upPlataformaSerie() {
+
     Serie.find((err, series) => {
         if (err) {
             console.log("Algo ha fallado")
@@ -438,10 +478,11 @@ function upPlataformaSerie(){
         }
         series.forEach(element => {
             element.plataformas.splice(0)
-            console.log(element.plataformas) 
-            streamingSerie(element.id_TMDB, element, 'update')   
+            streamingSerie(element.id_TMDB, element, 'update')
         })
     });
+    console.log('Platafomas de series actualizadas correctamente');
+    console.log('');
     main();
 }
 
