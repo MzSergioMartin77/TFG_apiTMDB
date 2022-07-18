@@ -11,6 +11,7 @@ const https = require('https');
 const fs = require('fs');
 const PythonS = require('python-shell');
 const {exec} = require("child_process");
+const {spawn} = require('child_process');
 
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost:27017/TFGdb')
@@ -370,7 +371,7 @@ function actualizarModelotf() {
         mode: 'text',
         pythonPath: 'C:/Users/Sergi/Anaconda3/envs/tensorflowks/python.exe',
         pythonOptions: ['-u'],
-        scriptPath: './',
+        scriptPath: '',
         args: ['']
     };
     
@@ -378,22 +379,42 @@ function actualizarModelotf() {
     PythonS.PythonShell.run('recomendadorjson.py', options, function (err, results) {
         if (err) throw err;
         // results is an array consisting of messages collected during execution
-        console.log('Resultado Python: %j', results);
+        console.log('Resultado Python');
+        console.log(results);
         //let dir = 'C:/Users/Sergi/Anaconda3/envs/tensorflowks';
-        if(results){
-            exec("tensorflowjs_converter --input=keras_saved_model ./modeltf ./modeltfjs", (error, stdout, stderr) => {
-                if (error) {
-                    console.log(`error: ${error.message}`);
+        /*if(results){
+            exec("conda activate C:/Users/Sergi/Anaconda3/envs/tensorflowks", (err, stdout, stderr) => {
+                if (err) {
+                    console.log(`error: ${err.message}`);
                     return;
                 }
                 if (stderr) {
                     console.log(`stderr: ${stderr}`);
                     return;
                 }
-                console.log(`stdout: ${stdout}`);
+                console.log(stdout);
+                exec("tensorflowjs_converter --input=keras_saved_model modeltf modeltfjs", (err, stdout, stderr) => {
+                    if (err) {
+                        console.log(`error: ${err.message}`);
+                        return;
+                    }
+                    if (stderr) {
+                        console.log(`stderr: ${stderr}`);
+                        return;
+                    }
+                    console.log(stdout);
+                });
             });
-        }
+            main();
+        }*/
     });
+
+    /*PythonS.PythonShell.run('comando.py', options, function (err, results) {
+        if (err) throw err;
+        // results is an array consisting of messages collected during execution
+        console.log('Resultado Python');
+        console.log(results);
+    });*/
 }
 
 function datosModelo() {

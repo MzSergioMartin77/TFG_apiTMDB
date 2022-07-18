@@ -22,6 +22,8 @@ warnings.filterwarnings('ignore')
 
 import tensorflow as tf
 
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 ratings_df = pd.read_json('./datos.json') 
 ratings_df.head()
 
@@ -62,8 +64,5 @@ model.fit([ratings_df.movieId, ratings_df.userId], ratings_df.nota, batch_size=3
 model.save(('./modeltf'))
 print("Modelo guardado")
 
-#conversion = subprocess.Popen(["tensorflowjs_converter --input=keras_saved_model ./modeltf ./modeltfjs"])
-#conversion.wait()
-#conversion.poll()
+os.system("conda activate C:/Users/Sergi/Anaconda3/envs/tensorflowks & tensorflowjs_converter --input=keras_saved_model  modeltf modeltfjs")
 
-#salida = os.system("tensorflowjs_converter --input=keras_saved_model ./modeltf ./modeltfjs")
